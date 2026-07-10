@@ -2,11 +2,11 @@
 
 import React, { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '../../../../context/AuthContext';
-import Navbar from '../../../../components/Navbar';
-import Sidebar from '../../../../components/Sidebar';
-import ChatDrawer from '../../../../components/ChatDrawer';
-import CollaborativeEditor from '../../../../components/CollaborativeEditor';
+import { useAuth } from '@/context/AuthContext';
+import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/Sidebar';
+import ChatDrawer from '@/components/ChatDrawer';
+import CollaborativeEditor from '@/components/CollaborativeEditor';
 
 export default function DocumentEditorPage() {
   const params = useParams();
