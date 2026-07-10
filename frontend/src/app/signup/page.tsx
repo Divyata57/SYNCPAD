@@ -2,32 +2,31 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserPlus, Loader2, CheckCircle } from 'lucide-react';
+import { UserPlus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { login } = useAuth();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [mockLink, setMockLink] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      // Call API directly to get the mock verification link in the response
       const apiRes = await api.post('/auth/register', { username, email, password });
       
       if (apiRes.data.success) {
-        setSuccess(true);
-        setMockLink(apiRes.data.mockVerificationLink);
+        // Auto-login the user
+        await login(email, password);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to register account.');
@@ -56,101 +55,67 @@ export default function SignupPage() {
           </div>
         )}
 
-        {success ? (
-          <div className="space-y-4 text-center">
-            <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-6 h-6" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-bold text-sm">Verify Mock Account</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                We've simulated an email verification step. Click the button below to instantly verify and activate your profile.
-              </p>
-            </div>
-            
-            <a
-              href={`http://localhost:5000${mockLink}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg block shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
-            >
-              Verify Mock Email Account
-            </a>
-
-            <p className="text-[10px] text-slate-500">
-              Note: Once clicked, return to log in with your credentials.
-            </p>
-            <div className="pt-2">
-              <Link href="/login" className="text-xs font-semibold text-indigo-400 hover:underline">
-                Back to Sign In
-              </Link>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1 block">Username</label>
+            <input
+              type="text"
+              required
+              placeholder="developer_guild"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full bg-slate-950/40 border border-slate-800 focus:ring-1 focus:ring-indigo-500 rounded-lg px-3 py-2 text-sm outline-none placeholder-slate-600"
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-xs font-semibold text-slate-300 mb-1 block">Username</label>
-              <input
-                type="text"
-                required
-                placeholder="developer_guild"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-slate-950/40 border border-slate-800 focus:ring-1 focus:ring-indigo-500 rounded-lg px-3 py-2 text-sm outline-none placeholder-slate-600"
-              />
-            </div>
 
-            <div>
-              <label className="text-xs font-semibold text-slate-300 mb-1 block">Email Address</label>
-              <input
-                type="email"
-                required
-                placeholder="dev@syncpad.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-950/40 border border-slate-800 focus:ring-1 focus:ring-indigo-500 rounded-lg px-3 py-2 text-sm outline-none placeholder-slate-600"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-300 mb-1 block">Password</label>
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950/40 border border-slate-800 focus:ring-1 focus:ring-indigo-500 rounded-lg px-3 py-2 text-sm outline-none placeholder-slate-600"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white font-semibold text-xs rounded-lg flex items-center justify-center space-x-1.5 shadow-lg shadow-indigo-500/25 transition-all hover:scale-102 active:scale-98 cursor-pointer"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <UserPlus className="w-4 h-4" />
-                  <span>Create Account</span>
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {!success && (
-          <div className="text-center pt-2">
-            <p className="text-[11px] text-slate-400">
-              Already have an account?{' '}
-              <Link href="/login" className="font-bold text-indigo-400 hover:underline">
-                Log In
-              </Link>
-            </p>
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1 block">Email Address</label>
+            <input
+              type="email"
+              required
+              placeholder="dev@syncpad.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-slate-950/40 border border-slate-800 focus:ring-1 focus:ring-indigo-500 rounded-lg px-3 py-2 text-sm outline-none placeholder-slate-600"
+            />
           </div>
-        )}
+
+          <div>
+            <label className="text-xs font-semibold text-slate-300 mb-1 block">Password</label>
+            <input
+              type="password"
+              required
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-slate-950/40 border border-slate-800 focus:ring-1 focus:ring-indigo-500 rounded-lg px-3 py-2 text-sm outline-none placeholder-slate-600"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white font-semibold text-xs rounded-lg flex items-center justify-center space-x-1.5 shadow-lg shadow-indigo-500/25 transition-all hover:scale-102 active:scale-98 cursor-pointer"
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4" />
+                <span>Create Account</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="text-center pt-2">
+          <p className="text-[11px] text-slate-400">
+            Already have an account?{' '}
+            <Link href="/login" className="font-bold text-indigo-400 hover:underline">
+              Log In
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

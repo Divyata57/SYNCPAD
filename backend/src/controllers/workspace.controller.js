@@ -175,8 +175,23 @@ export const inviteMember = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Only Owners and Admins can invite members.' });
     }
 
-    const invitedUser = await User.findOne({ email: email.toLowerCase() });
-    if (!invitedUser) return res.status(404).json({ success: false, message: 'User with this email not found.' });
+    let invitedUser = await User.findOne({ email: email.toLowerCase() });
+    if (!invitedUser) {
+      // Auto-create user on the fly so they can be invited
+      const usernamePrefix = email.split('@')[0] || 'user';
+      let finalUsername = usernamePrefix;
+      const usernameExists = await User.findOne({ username: finalUsername });
+      if (usernameExists) {
+        finalUsername = `${usernamePrefix}_${Math.floor(Math.random() * 1000)}`;
+      }
+      invitedUser = new User({
+        username: finalUsername,
+        email: email.toLowerCase(),
+        password: 'temporary-invite-password-123',
+        isVerified: true
+      });
+      await invitedUser.save();
+    }
 
     const isAlreadyMember = workspace.members.some(m => m.user.toString() === invitedUser._id.toString());
     if (isAlreadyMember) {

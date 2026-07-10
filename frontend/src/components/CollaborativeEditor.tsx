@@ -375,7 +375,8 @@ export default function CollaborativeEditor({ documentId }: { documentId: string
             {/* Blocks Listing */}
             <div className="flex-1 flex flex-col space-y-1.5 relative">
               {blocks.map((block, idx) => {
-                const isLocked = !!block.lockedBy && block.lockedBy.id !== user?.id;
+                // Bypassed locking to allow multiple users to interact/edit simultaneously
+                const isLocked = false;
 
                 return (
                   <div
